@@ -662,8 +662,9 @@
         </div>
     </div>
 
-    <!-- WorkBuddy Cloud SDK (CDN) -->
-    <script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
     <!-- 成功提示 -->
     <div class="toast" id="toast">
@@ -672,32 +673,35 @@
     </div>
 
     <script>
-        // ===== 云服务配置 =====
-        // 以下配置在开通云服务后由系统自动填入
-        // 开通方式：在 WorkBuddy 中对本应用执行「开通云服务」操作
-        var CLOUD_CONFIG = {
-            endpoint: '',        // 云服务数据面地址，开通后填入
-            publishableKey: ''   // 应用公钥，开通后填入
+        // ===== Firebase 配置 =====
+        // 请在 Firebase Console (https://console.firebase.google.com) 创建项目后，
+        // 将下面的配置替换为你自己的项目配置
+        // 步骤：创建项目 → 添加 Web 应用 → 复制配置 → 创建 Firestore 数据库 → 设置公开读写规则
+        var firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
-        var cloud = null;
+        var db = null;
         var cloudReady = false;
 
-        // 初始化云客户端
+        // 初始化 Firebase
         function initCloud() {
-            if (CLOUD_CONFIG.endpoint && CLOUD_CONFIG.publishableKey && typeof WorkBuddyCloud !== 'undefined') {
+            if (firebaseConfig.apiKey !== "YOUR_API_KEY" && typeof firebase !== 'undefined') {
                 try {
-                    cloud = WorkBuddyCloud.createWorkBuddyCloud({
-                        endpoint: CLOUD_CONFIG.endpoint,
-                        publishableKey: CLOUD_CONFIG.publishableKey
-                    });
+                    firebase.initializeApp(firebaseConfig);
+                    db = firebase.firestore();
                     cloudReady = true;
-                    console.log('云服务已连接');
+                    console.log('Firebase 已连接');
                 } catch(e) {
-                    console.warn('云服务初始化失败，将使用本地存储', e);
+                    console.warn('Firebase 初始化失败，将使用本地存储', e);
                 }
             } else {
-                console.log('云服务未配置，使用本地存储模式');
+                console.log('Firebase 未配置，使用本地存储模式。请在 index.html 中填入 Firebase 配置。');
             }
         }
 
@@ -756,22 +760,21 @@
         async function getRecords() {
             if (cloudReady) {
                 try {
-                    var result = await cloud.database
-                        .from('christmas_programs')
-                        .select('*')
-                        .order('created_at', { ascending: false });
-                    if (result.error) throw result.error;
-                    return (result.data || []).map(function(r) {
+                    var snapshot = await db.collection('programs')
+                        .orderBy('createdAt', 'desc')
+                        .get();
+                    return snapshot.docs.map(function(doc) {
+                        var r = doc.data();
                         return {
-                            id: r.id,
-                            name: r.program_name,
-                            type: r.program_type,
-                            leader: r.leader,
-                            group: r.belong_group,
-                            peopleCount: r.people_count,
-                            duration: r.duration,
+                            id: doc.id,
+                            name: r.name || '',
+                            type: r.type || '',
+                            leader: r.leader || '',
+                            group: r.group || '',
+                            peopleCount: r.peopleCount || 0,
+                            duration: r.duration || 0,
                             props: r.props || '无',
-                            submitTime: r.created_at ? new Date(r.created_at).toLocaleString('zh-CN', { hour12: false }) : ''
+                            submitTime: r.createdAt ? r.createdAt.toDate().toLocaleString('zh-CN', { hour12: false }) : ''
                         };
                     });
                 } catch(e) {
@@ -785,19 +788,16 @@
         async function addRecord(record) {
             if (cloudReady) {
                 try {
-                    var result = await cloud.database
-                        .from('christmas_programs')
-                        .insert({
-                            program_name: record.name,
-                            program_type: record.type,
-                            leader: record.leader,
-                            belong_group: record.group,
-                            people_count: record.peopleCount,
-                            duration: record.duration,
-                            props: record.props
-                        })
-                        .select();
-                    if (result.error) throw result.error;
+                    await db.collection('programs').add({
+                        name: record.name,
+                        type: record.type,
+                        leader: record.leader,
+                        group: record.group,
+                        peopleCount: record.peopleCount,
+                        duration: record.duration,
+                        props: record.props,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                     return true;
                 } catch(e) {
                     console.warn('云端写入失败，保存到本地', e);
@@ -814,12 +814,7 @@
         async function removeRecord(id) {
             if (cloudReady) {
                 try {
-                    var result = await cloud.database
-                        .from('christmas_programs')
-                        .delete()
-                        .eq('id', id)
-                        .select();
-                    if (result.error) throw result.error;
+                    await db.collection('programs').doc(String(id)).delete();
                     return true;
                 } catch(e) {
                     console.warn('云端删除失败，删除本地', e);
@@ -938,7 +933,7 @@
                         '</div>' +
                         '<div style="display:flex;align-items:center;gap:8px;">' +
                             '<span class="record-type">' + escapeHtml(r.type) + '</span>' +
-                            '<button class="delete-btn" onclick="deleteRecord(' + r.id + ')" title="删除">\u2715</button>' +
+                            '<button class="delete-btn" onclick="deleteRecord(\'' + escapeHtml(String(r.id)) + '\')" title="删除">\u2715</button>' +
                         '</div>' +
                     '</div>' +
                     '<div class="record-detail">' +
