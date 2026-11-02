@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026伯特利教会圣诞节目报名</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #0a1a2f 0%, #16213e 40%, #1a2a4a 70%, #0d1f3c 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* 雪花动画背景 */
+        .snowflakes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .snowflake {
+            position: absolute;
+            color: #ffffff;
+            font-size: 1.2em;
+            opacity: 0.7;
+            animation: fall linear infinite;
+            user-select: none;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-10vh) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(110vh) translateX(30px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* 星光闪烁 */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #ffd700;
+            border-radius: 50%;
+            box-shadow: 0 0 4px #ffd700, 0 0 8px #ffd700;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 20px 16px 40px;
+        }
+
+        /* 顶部标题区 */
+        .header {
+            text-align: center;
+            padding: 40px 20px 30px;
+        }
+
+        .header .church-name {
+            font-size: 1.1rem;
+            color: #ffd700;
+            letter-spacing: 4px;
+            margin-bottom: 12px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3), 0 2px 8px rgba(0,0,0,0.3);
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .header .subtitle {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 2px;
+        }
+
+        .header .bible-verse {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        .header .bible-verse p {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        .header .bible-verse .ref {
+            color: #ffd700;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        /* 装饰星星 */
+        .deco-star {
+            display: inline-block;
+            color: #ffd700;
+            font-size: 1.5rem;
+            margin: 0 8px;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+            50% { text-shadow: 0 0 15px rgba(255, 215, 0, 0.9), 0 0 25px rgba(255, 215, 0, 0.4); }
+        }
+
+        /* 主卡片 */
+        .card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 32px 28px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            color: #b71c1c;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid #ffd700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title .icon {
+            font-size: 1.4rem;
+        }
+
+        /* 表单 */
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            color: #444;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group label .required {
+            color: #d32f2f;
+            margin-left: 2px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            background: #fafafa;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group input[type="number"]:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #c62828;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        .form-group select {
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 12px;
+            padding-right: 36px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 14px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        /* 按钮 */
+        .btn {
+            display: inline-block;
+            padding: 14px 36px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #c62828 0%, #d32f2f 50%, #b71c1c 100%);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(183, 28, 28, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(183, 28, 28, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: #c62828;
+            border: 2px solid #c62828;
+        }
+
+        .btn-secondary:hover {
+            background: #fff5f5;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        /* 提交成功提示 */
+        .toast {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #fff;
+            padding: 16px 32px;
+            border-radius: 12px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 4px solid #4caf50;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast .check {
+            color: #4caf50;
+            font-size: 1.4rem;
+        }
+
+        .toast p {
+            color: #333;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        /* 报名记录列表 */
+        .record-list {
+            margin-top: 20px;
+        }
+
+        .record-item {
+            background: #f9f9f9;
+            border: 1px solid #e8e8e8;
+            border-left: 4px solid #c62828;
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .record-item:hover {
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            transform: translateX(2px);
+        }
+
+        .record-item .record-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .record-item .record-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #b71c1c;
+        }
+
+        .record-item .record-type {
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: #fff3e0;
+            color: #e65100;
+            white-space: nowrap;
+        }
+
+        .record-item .record-detail {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 16px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .record-item .record-detail .label {
+            color: #999;
+        }
+
+        .record-item .record-footer {
+            margin-top: 8px;
+            font-size: 0.82rem;
+            color: #888;
+            border-top: 1px dashed #e0e0e0;
+            padding-top: 8px;
+        }
+
+        .record-item .delete-btn {
+            background: none;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: color 0.3s;
+            padding: 2px 6px;
+        }
+
+        .record-item .delete-btn:hover {
+            color: #d32f2f;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #aaa;
+        }
+
+        .empty-state .icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+        }
+
+        /* 统计信息 */
+        .stats {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .stat-card .num {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #ffd700;
+        }
+
+        .stat-card .label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 2px;
+        }
+
+        /* Tab 切换 */
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px 20px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            background: #c62828;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(183, 28, 28, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 底部 */
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.8rem;
+        }
+
+        .footer p {
+            margin-bottom: 4px;
+        }
+
+        .footer .heart {
+            color: #e57373;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.6rem;
+            }
+            .card {
+                padding: 24px 18px;
+            }
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            .record-item .record-detail {
+                grid-template-columns: 1fr;
+            }
+            .btn-group {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+            }
+            .stats {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 星光背景 -->
+    <div class="stars" id="stars"></div>
+    <!-- 雪花背景 -->
+    <div class="snowflakes" id="snowflakes"></div>
+
+    <div class="container">
+        <!-- 顶部标题 -->
+        <div class="header">
+            <div class="church-name">伯特利教会</div>
+            <h1><span class="deco-star">★</span>2026圣诞节目报名<span class="deco-star">★</span></h1>
+            <p class="subtitle">报名截止日期：2026年12月6日</p>
+            <div class="bible-verse">
+                <p>"今天在大卫的城里，为你们生了救主，就是主基督。"</p>
+                <p class="ref">— 路加福音 2:11</p>
+            </div>
+        </div>
+
+        <!-- 统计信息 -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="num" id="statTotal">0</div>
+                <div class="label">已报名节目</div>
+            </div>
+            <div class="stat-card">
+                <div class="num" id="statPeople">0</div>
+                <div class="label">总参与人数</div>
+            </div>
+            <div class="stat-card">
+                <div class="num" id="statDuration">0</div>
+                <div class="label">总时长(分钟)</div>
+            </div>
+        </div>
+
+        <!-- Tab 切换 -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('form')">填写报名</div>
+            <div class="tab" onclick="switchTab('records')">报名记录</div>
+        </div>
+
+        <!-- 报名表单 -->
+        <div class="tab-content active" id="tab-form">
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">🎵</span>
+                    <span>节目报名表</span>
+                </div>
+
+                <form id="signupForm" onsubmit="return submitForm(event)">
+                    <!-- 节目名称 -->
+                    <div class="form-group">
+                        <label>节目名称 <span class="required">*</span></label>
+                        <input type="text" id="programName" placeholder="请输入节目名称，如：平安夜合唱" required maxlength="50">
+                    </div>
+
+                    <!-- 节目性质 -->
+                    <div class="form-group">
+                        <label>节目性质 <span class="required">*</span></label>
+                        <select id="programType" required>
+                            <option value="">请选择节目性质</option>
+                            <option value="合唱">合唱</option>
+                            <option value="独唱">独唱</option>
+                            <option value="舞蹈">舞蹈</option>
+                            <option value="乐器演奏">乐器演奏</option>
+                            <option value="诗朗诵">诗朗诵</option>
+                            <option value="短剧/话剧">短剧/话剧</option>
+                            <option value="情景剧">情景剧</option>
+                            <option value="手语舞">手语舞</option>
+                            <option value="见证分享">见证分享</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+
+                    <!-- 节目负责人 -->
+                    <div class="form-group">
+                        <label>节目负责人 <span class="required">*</span></label>
+                        <input type="text" id="leader" placeholder="请输入负责人姓名" required maxlength="20">
+                    </div>
+
+                    <!-- 所属班级/小组或个人 -->
+                    <div class="form-group">
+                        <label>所属班级/小组或个人 <span class="required">*</span></label>
+                        <input type="text" id="group" placeholder="如：青年团契、主日学大班、个人等" required maxlength="30">
+                    </div>
+
+                    <!-- 参与人数 & 节目时长 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>节目参与人数 <span class="required">*</span></label>
+                            <input type="number" id="peopleCount" placeholder="如：8" required min="1" max="200">
+                        </div>
+                        <div class="form-group">
+                            <label>节目时长（分钟） <span class="required">*</span></label>
+                            <input type="number" id="duration" placeholder="如：5" required min="1" max="60">
+                        </div>
+                    </div>
+
+                    <!-- 所需道具 -->
+                    <div class="form-group">
+                        <label>所需道具</label>
+                        <textarea id="props" placeholder="请列出节目所需的道具，如：话筒4支、钢琴、音响设备、圣诞树等（如无特殊需求可留空）" maxlength="200"></textarea>
+                        <div class="hint">多个道具请用逗号或顿号分隔</div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="reset" class="btn btn-secondary">重置表单</button>
+                        <button type="submit" class="btn btn-primary">提交报名</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 报名记录 -->
+        <div class="tab-content" id="tab-records">
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">📋</span>
+                    <span>已报名节目列表</span>
+                </div>
+                <div class="record-list" id="recordList">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部 -->
+        <div class="footer">
+            <p>伯特利教会 · 2026圣诞节</p>
+            <p>"在至高之处荣耀归与神，在地上平安归与他所喜悦的人。" <span class="heart">路加福音 2:14</span></p>
+        </div>
+    </div>
+
+    <!-- 成功提示 -->
+    <div class="toast" id="toast">
+        <span class="check">✓</span>
+        <p id="toastMsg">报名提交成功！</p>
+    </div>
+
+    <script>
+        // ===== 背景动画 =====
+        function createSnowflakes() {
+            const container = document.getElementById('snowflakes');
+            const flakes = ['❄', '❅', '❆', '✦', '✧'];
+            for (let i = 0; i < 30; i++) {
+                const flake = document.createElement('div');
+                flake.className = 'snowflake';
+                flake.textContent = flakes[Math.floor(Math.random() * flakes.length)];
+                flake.style.left = Math.random() * 100 + '%';
+                flake.style.animationDuration = (8 + Math.random() * 12) + 's';
+                flake.style.animationDelay = Math.random() * 10 + 's';
+                flake.style.fontSize = (0.8 + Math.random() * 1.5) + 'em';
+                container.appendChild(flake);
+            }
+        }
+
+        function createStars() {
+            const container = document.getElementById('stars');
+            for (let i = 0; i < 40; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.animationDuration = (2 + Math.random() * 2) + 's';
+                container.appendChild(star);
+            }
+        }
+
+        createSnowflakes();
+        createStars();
+
+        // ===== 数据存储 =====
+        var STORAGE_KEY = 'bethel_christmas_2026_registrations';
+
+        function getRecords() {
+            try {
+                var data = localStorage.getItem(STORAGE_KEY);
+                return data ? JSON.parse(data) : [];
+            } catch(e) {
+                return [];
+            }
+        }
+
+        function saveRecords(records) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        }
+
+        // ===== Tab 切换 =====
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+            document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tab).classList.add('active');
+            if (tab === 'records') {
+                renderRecords();
+            }
+        }
+
+        // ===== 提交表单 =====
+        function submitForm(e) {
+            e.preventDefault();
+
+            var name = document.getElementById('programName').value.trim();
+            var type = document.getElementById('programType').value;
+            var leader = document.getElementById('leader').value.trim();
+            var group = document.getElementById('group').value.trim();
+            var peopleCount = parseInt(document.getElementById('peopleCount').value);
+            var duration = parseInt(document.getElementById('duration').value);
+            var props = document.getElementById('props').value.trim();
+
+            if (!name || !type || !leader || !group || !peopleCount || !duration) {
+                showToast('请填写所有必填项', false);
+                return false;
+            }
+
+            var record = {
+                id: Date.now(),
+                name: name,
+                type: type,
+                leader: leader,
+                group: group,
+                peopleCount: peopleCount,
+                duration: duration,
+                props: props || '无',
+                submitTime: new Date().toLocaleString('zh-CN', { hour12: false })
+            };
+
+            var records = getRecords();
+            records.push(record);
+            saveRecords(records);
+
+            updateStats();
+            showToast('报名提交成功！愿神赐福您的节目', true);
+
+            // 重置表单
+            document.getElementById('signupForm').reset();
+
+            // 延迟后切换到记录页
+            setTimeout(function() {
+                var recordsTab = document.querySelectorAll('.tab')[1];
+                recordsTab.click();
+            }, 1200);
+
+            return false;
+        }
+
+        // ===== 提示信息 =====
+        function showToast(msg, success) {
+            var toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.style.borderLeftColor = success ? '#4caf50' : '#f44336';
+            toast.querySelector('.check').textContent = success ? '✓' : '!';
+            toast.querySelector('.check').style.color = success ? '#4caf50' : '#f44336';
+            toast.classList.add('show');
+            setTimeout(function() {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // ===== 渲染记录列表 =====
+        function renderRecords() {
+            var records = getRecords();
+            var list = document.getElementById('recordList');
+
+            if (records.length === 0) {
+                list.innerHTML = '<div class="empty-state">' +
+                    '<div class="icon">🎄</div>' +
+                    '<p>暂无报名记录</p>' +
+                    '<p style="margin-top:6px;font-size:0.8rem;color:#ccc">期待第一个节目报名！</p>' +
+                    '</div>';
+                return;
+            }
+
+            var html = '';
+            records.forEach(function(r) {
+                html += '<div class="record-item">' +
+                    '<div class="record-header">' +
+                        '<div>' +
+                            '<div class="record-name">' + escapeHtml(r.name) + '</div>' +
+                            '<div style="font-size:0.8rem;color:#999;margin-top:2px;">负责人：' + escapeHtml(r.leader) + '</div>' +
+                        '</div>' +
+                        '<div style="display:flex;align-items:center;gap:8px;">' +
+                            '<span class="record-type">' + escapeHtml(r.type) + '</span>' +
+                            '<button class="delete-btn" onclick="deleteRecord(' + r.id + ')" title="删除">✕</button>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="record-detail">' +
+                        '<div><span class="label">所属：</span>' + escapeHtml(r.group) + '</div>' +
+                        '<div><span class="label">人数：</span>' + r.peopleCount + ' 人</div>' +
+                        '<div><span class="label">时长：</span>' + r.duration + ' 分钟</div>' +
+                        '<div><span class="label">道具：</span>' + escapeHtml(r.props) + '</div>' +
+                    '</div>' +
+                    '<div class="record-footer">提交时间：' + r.submitTime + '</div>' +
+                '</div>';
+            });
+            list.innerHTML = html;
+        }
+
+        // ===== 删除记录 =====
+        function deleteRecord(id) {
+            if (!confirm('确定要删除这条报名记录吗？')) return;
+            var records = getRecords();
+            records = records.filter(function(r) { return r.id !== id; });
+            saveRecords(records);
+            updateStats();
+            renderRecords();
+            showToast('记录已删除', false);
+        }
+
+        // ===== 更新统计 =====
+        function updateStats() {
+            var records = getRecords();
+            var totalPeople = 0;
+            var totalDuration = 0;
+            records.forEach(function(r) {
+                totalPeople += r.peopleCount;
+                totalDuration += r.duration;
+            });
+            document.getElementById('statTotal').textContent = records.length;
+            document.getElementById('statPeople').textContent = totalPeople;
+            document.getElementById('statDuration').textContent = totalDuration;
+        }
+
+        // ===== HTML 转义 =====
+        function escapeHtml(text) {
+            if (!text) return '';
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== 导出数据功能 =====
+        function exportRecords() {
+            var records = getRecords();
+            if (records.length === 0) {
+                showToast('暂无数据可导出', false);
+                return;
+            }
+            var csv = '\uFEFF节目名称,节目性质,节目负责人,所属班级/小组,参与人数,节目时长(分钟),所需道具,提交时间\n';
+            records.forEach(function(r) {
+                csv += '"' + r.name + '","' + r.type + '","' + r.leader + '","' + r.group + '","' + r.peopleCount + '","' + r.duration + '","' + r.props + '","' + r.submitTime + '"\n';
+            });
+            var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = '伯特利教会2026圣诞节目报名.csv';
+            link.click();
+            showToast('数据已导出', true);
+        }
+
+        // ===== 初始化 =====
+        updateStats();
+        renderRecords();
+    </script>
+</body>
+</html>
