@@ -505,6 +505,106 @@
 
         /* 响应式 */
         @media (max-width: 600px) {
+
+        /* 删除确认弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px 24px 24px;
+            max-width: 360px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-box .modal-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .modal-box h3 {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .modal-box p {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 16px;
+        }
+
+        .modal-box input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            text-align: center;
+            letter-spacing: 2px;
+            margin-bottom: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .modal-box input:focus {
+            outline: none;
+            border-color: #c62828;
+        }
+
+        .modal-box .modal-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-box .modal-btns button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .modal-btn-cancel {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .modal-btn-cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .modal-btn-confirm {
+            background: #c62828;
+            color: #fff;
+        }
+
+        .modal-btn-confirm:hover {
+            background: #b71c1c;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
             .header h1 {
                 font-size: 1.6rem;
             }
@@ -582,7 +682,7 @@
                     <!-- 节目名称 -->
                     <div class="form-group">
                         <label>节目名称 <span class="required">*</span></label>
-                        <input type="text" id="programName" placeholder="请输入节目名称，如：平安夜合唱" required maxlength="50">
+                        <input type="text" id="programName" placeholder="请输入节目名称，如：活出爱" required maxlength="50">
                     </div>
 
                     <!-- 节目性质 -->
@@ -670,6 +770,20 @@
     <div class="toast" id="toast">
         <span class="check">✓</span>
         <p id="toastMsg">报名提交成功！</p>
+    </div>
+
+    <!-- 删除确认弹窗 -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-box">
+            <div class="modal-icon">🔒</div>
+            <h3>删除确认</h3>
+            <p>请输入管理密码以删除此报名记录</p>
+            <input type="password" id="deletePassword" placeholder="管理密码" maxlength="20">
+            <div class="modal-btns">
+                <button class="modal-btn-cancel" onclick="closeDeleteModal()">取消</button>
+                <button class="modal-btn-confirm" onclick="confirmDelete()">确认删除</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -948,14 +1062,53 @@
             list.innerHTML = html;
         }
 
-        // ===== 删除记录 =====
-        async function deleteRecord(id) {
-            if (!confirm('确定要删除这条报名记录吗？')) return;
-            await removeRecord(id);
+        // ===== 删除记录（密码保护） =====
+        // 管理密码，请修改为你自己的密码
+        var DELETE_PASSWORD = 'bethel2026';
+
+        var pendingDeleteId = null;
+
+        function deleteRecord(id) {
+            pendingDeleteId = id;
+            var modal = document.getElementById('deleteModal');
+            var pwdInput = document.getElementById('deletePassword');
+            pwdInput.value = '';
+            modal.classList.add('show');
+            setTimeout(function() { pwdInput.focus(); }, 100);
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            pendingDeleteId = null;
+        }
+
+        async function confirmDelete() {
+            var pwd = document.getElementById('deletePassword').value;
+            if (pwd !== DELETE_PASSWORD) {
+                showToast('密码错误，无法删除', false);
+                document.getElementById('deletePassword').value = '';
+                return;
+            }
+            if (pendingDeleteId === null) return;
+            var idToDelete = pendingDeleteId;
+            closeDeleteModal();
+            await removeRecord(idToDelete);
             updateStats();
             renderRecords();
             showToast('记录已删除', false);
         }
+
+        // 回车键确认删除
+        document.getElementById('deletePassword').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                confirmDelete();
+            }
+        });
+
+        // 点击遮罩关闭弹窗
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDeleteModal();
+        });
 
         // ===== 更新统计 =====
         async function updateStats() {
