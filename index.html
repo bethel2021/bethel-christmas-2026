@@ -662,6 +662,9 @@
         </div>
     </div>
 
+    <!-- WorkBuddy Cloud SDK (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js"></script>
+
     <!-- 成功提示 -->
     <div class="toast" id="toast">
         <span class="check">✓</span>
@@ -669,12 +672,41 @@
     </div>
 
     <script>
+        // ===== 云服务配置 =====
+        // 以下配置在开通云服务后由系统自动填入
+        // 开通方式：在 WorkBuddy 中对本应用执行「开通云服务」操作
+        var CLOUD_CONFIG = {
+            endpoint: '',        // 云服务数据面地址，开通后填入
+            publishableKey: ''   // 应用公钥，开通后填入
+        };
+
+        var cloud = null;
+        var cloudReady = false;
+
+        // 初始化云客户端
+        function initCloud() {
+            if (CLOUD_CONFIG.endpoint && CLOUD_CONFIG.publishableKey && typeof WorkBuddyCloud !== 'undefined') {
+                try {
+                    cloud = WorkBuddyCloud.createWorkBuddyCloud({
+                        endpoint: CLOUD_CONFIG.endpoint,
+                        publishableKey: CLOUD_CONFIG.publishableKey
+                    });
+                    cloudReady = true;
+                    console.log('云服务已连接');
+                } catch(e) {
+                    console.warn('云服务初始化失败，将使用本地存储', e);
+                }
+            } else {
+                console.log('云服务未配置，使用本地存储模式');
+            }
+        }
+
         // ===== 背景动画 =====
         function createSnowflakes() {
-            const container = document.getElementById('snowflakes');
-            const flakes = ['❄', '❅', '❆', '✦', '✧'];
-            for (let i = 0; i < 30; i++) {
-                const flake = document.createElement('div');
+            var container = document.getElementById('snowflakes');
+            var flakes = ['\u2744', '\u2745', '\u2746', '\u2726', '\u2727'];
+            for (var i = 0; i < 30; i++) {
+                var flake = document.createElement('div');
                 flake.className = 'snowflake';
                 flake.textContent = flakes[Math.floor(Math.random() * flakes.length)];
                 flake.style.left = Math.random() * 100 + '%';
@@ -686,9 +718,9 @@
         }
 
         function createStars() {
-            const container = document.getElementById('stars');
-            for (let i = 0; i < 40; i++) {
-                const star = document.createElement('div');
+            var container = document.getElementById('stars');
+            for (var i = 0; i < 40; i++) {
+                var star = document.createElement('div');
                 star.className = 'star';
                 star.style.left = Math.random() * 100 + '%';
                 star.style.top = Math.random() * 100 + '%';
@@ -700,11 +732,12 @@
 
         createSnowflakes();
         createStars();
+        initCloud();
 
-        // ===== 数据存储 =====
+        // ===== 本地存储（备用） =====
         var STORAGE_KEY = 'bethel_christmas_2026_registrations';
 
-        function getRecords() {
+        function getLocalRecords() {
             try {
                 var data = localStorage.getItem(STORAGE_KEY);
                 return data ? JSON.parse(data) : [];
@@ -713,8 +746,89 @@
             }
         }
 
-        function saveRecords(records) {
+        function saveLocalRecords(records) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        }
+
+        // ===== 数据操作（云端优先，本地兜底） =====
+
+        // 获取所有报名记录
+        async function getRecords() {
+            if (cloudReady) {
+                try {
+                    var result = await cloud.database
+                        .from('christmas_programs')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    if (result.error) throw result.error;
+                    return (result.data || []).map(function(r) {
+                        return {
+                            id: r.id,
+                            name: r.program_name,
+                            type: r.program_type,
+                            leader: r.leader,
+                            group: r.belong_group,
+                            peopleCount: r.people_count,
+                            duration: r.duration,
+                            props: r.props || '无',
+                            submitTime: r.created_at ? new Date(r.created_at).toLocaleString('zh-CN', { hour12: false }) : ''
+                        };
+                    });
+                } catch(e) {
+                    console.warn('云端读取失败，使用本地数据', e);
+                }
+            }
+            return getLocalRecords();
+        }
+
+        // 提交报名记录
+        async function addRecord(record) {
+            if (cloudReady) {
+                try {
+                    var result = await cloud.database
+                        .from('christmas_programs')
+                        .insert({
+                            program_name: record.name,
+                            program_type: record.type,
+                            leader: record.leader,
+                            belong_group: record.group,
+                            people_count: record.peopleCount,
+                            duration: record.duration,
+                            props: record.props
+                        })
+                        .select();
+                    if (result.error) throw result.error;
+                    return true;
+                } catch(e) {
+                    console.warn('云端写入失败，保存到本地', e);
+                }
+            }
+            // 本地兜底
+            var records = getLocalRecords();
+            records.push(record);
+            saveLocalRecords(records);
+            return true;
+        }
+
+        // 删除报名记录
+        async function removeRecord(id) {
+            if (cloudReady) {
+                try {
+                    var result = await cloud.database
+                        .from('christmas_programs')
+                        .delete()
+                        .eq('id', id)
+                        .select();
+                    if (result.error) throw result.error;
+                    return true;
+                } catch(e) {
+                    console.warn('云端删除失败，删除本地', e);
+                }
+            }
+            var records = getLocalRecords();
+            records = records.filter(function(r) { return r.id !== id; });
+            saveLocalRecords(records);
+            return true;
         }
 
         // ===== Tab 切换 =====
@@ -729,7 +843,7 @@
         }
 
         // ===== 提交表单 =====
-        function submitForm(e) {
+        async function submitForm(e) {
             e.preventDefault();
 
             var name = document.getElementById('programName').value.trim();
@@ -745,6 +859,11 @@
                 return false;
             }
 
+            // 禁用提交按钮，防止重复提交
+            var submitBtn = document.querySelector('.btn-primary');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '提交中...';
+
             var record = {
                 id: Date.now(),
                 name: name,
@@ -757,21 +876,25 @@
                 submitTime: new Date().toLocaleString('zh-CN', { hour12: false })
             };
 
-            var records = getRecords();
-            records.push(record);
-            saveRecords(records);
+            try {
+                await addRecord(record);
+                updateStats();
+                showToast('报名提交成功！愿神赐福您的节目', true);
 
-            updateStats();
-            showToast('报名提交成功！愿神赐福您的节目', true);
+                // 重置表单
+                document.getElementById('signupForm').reset();
 
-            // 重置表单
-            document.getElementById('signupForm').reset();
-
-            // 延迟后切换到记录页
-            setTimeout(function() {
-                var recordsTab = document.querySelectorAll('.tab')[1];
-                recordsTab.click();
-            }, 1200);
+                // 延迟后切换到记录页
+                setTimeout(function() {
+                    var recordsTab = document.querySelectorAll('.tab')[1];
+                    recordsTab.click();
+                }, 1200);
+            } catch(err) {
+                showToast('提交失败，请稍后重试', false);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '提交报名';
+            }
 
             return false;
         }
@@ -781,7 +904,7 @@
             var toast = document.getElementById('toast');
             document.getElementById('toastMsg').textContent = msg;
             toast.style.borderLeftColor = success ? '#4caf50' : '#f44336';
-            toast.querySelector('.check').textContent = success ? '✓' : '!';
+            toast.querySelector('.check').textContent = success ? '\u2713' : '!';
             toast.querySelector('.check').style.color = success ? '#4caf50' : '#f44336';
             toast.classList.add('show');
             setTimeout(function() {
@@ -790,13 +913,15 @@
         }
 
         // ===== 渲染记录列表 =====
-        function renderRecords() {
-            var records = getRecords();
+        async function renderRecords() {
             var list = document.getElementById('recordList');
+            list.innerHTML = '<div class="empty-state"><div class="icon" style="animation: spin 1s linear infinite;">\u23f3</div><p>加载中...</p></div>';
+
+            var records = await getRecords();
 
             if (records.length === 0) {
                 list.innerHTML = '<div class="empty-state">' +
-                    '<div class="icon">🎄</div>' +
+                    '<div class="icon">\ud83c\udf84</div>' +
                     '<p>暂无报名记录</p>' +
                     '<p style="margin-top:6px;font-size:0.8rem;color:#ccc">期待第一个节目报名！</p>' +
                     '</div>';
@@ -813,7 +938,7 @@
                         '</div>' +
                         '<div style="display:flex;align-items:center;gap:8px;">' +
                             '<span class="record-type">' + escapeHtml(r.type) + '</span>' +
-                            '<button class="delete-btn" onclick="deleteRecord(' + r.id + ')" title="删除">✕</button>' +
+                            '<button class="delete-btn" onclick="deleteRecord(' + r.id + ')" title="删除">\u2715</button>' +
                         '</div>' +
                     '</div>' +
                     '<div class="record-detail">' +
@@ -822,26 +947,24 @@
                         '<div><span class="label">时长：</span>' + r.duration + ' 分钟</div>' +
                         '<div><span class="label">道具：</span>' + escapeHtml(r.props) + '</div>' +
                     '</div>' +
-                    '<div class="record-footer">提交时间：' + r.submitTime + '</div>' +
+                    '<div class="record-footer">提交时间：' + (r.submitTime || '未知') + '</div>' +
                 '</div>';
             });
             list.innerHTML = html;
         }
 
         // ===== 删除记录 =====
-        function deleteRecord(id) {
+        async function deleteRecord(id) {
             if (!confirm('确定要删除这条报名记录吗？')) return;
-            var records = getRecords();
-            records = records.filter(function(r) { return r.id !== id; });
-            saveRecords(records);
+            await removeRecord(id);
             updateStats();
             renderRecords();
             showToast('记录已删除', false);
         }
 
         // ===== 更新统计 =====
-        function updateStats() {
-            var records = getRecords();
+        async function updateStats() {
+            var records = await getRecords();
             var totalPeople = 0;
             var totalDuration = 0;
             records.forEach(function(r) {
@@ -862,8 +985,8 @@
         }
 
         // ===== 导出数据功能 =====
-        function exportRecords() {
-            var records = getRecords();
+        async function exportRecords() {
+            var records = await getRecords();
             if (records.length === 0) {
                 showToast('暂无数据可导出', false);
                 return;
@@ -879,6 +1002,11 @@
             link.click();
             showToast('数据已导出', true);
         }
+
+        // ===== 加载动画 =====
+        var style = document.createElement('style');
+        style.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
+        document.head.appendChild(style);
 
         // ===== 初始化 =====
         updateStats();
